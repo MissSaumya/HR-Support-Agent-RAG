@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HR Enterprise Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Full Screen Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8f9fa; }
+
+        .app-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+        
+        .header { background: #007bff; color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.5rem; }
+        .clear-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+
+        #chat-window { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 20px; background: white; }
+        .msg { padding: 15px 25px; border-radius: 10px; max-width: 70%; line-height: 1.8; font-size: 16px; }
+        /* These styles ensure bullet points look good in the full-screen view */
+        .msg ul { margin-left: 20px; }
+        .msg p { margin-bottom: 10px; }
+        
+        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: #f1f3f5; color: #212529; border-bottom-left-radius: 2px; border: 1px solid #dee2e6; }
+        
+        .loader { display: none; padding: 0 40px 20px 40px; font-style: italic; color: #6c757d; }
+
+        .input-area { background: white; padding: 30px 40px; border-top: 1px solid #eee; display: flex; gap: 20px; align-items: center; }
+        input { flex: 1; border: 2px solid #e9ecef; padding: 15px 25px; border-radius: 30px; outline: none; font-size: 16px; }
+        .send-btn { background: #007bff; color: white; border: none; padding: 15px 35px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="header">
+            <h1>HR Policy Assistant (Enterprise Edition)</h1>
+            <button class="clear-btn" onclick="clearChat()">Clear History</button>
+        </div>
+
+        <div id="chat-window">
+            <div class="msg ai">Welcome. I am ready to assist you with HR policies.</div>
+        </div>
+
+        <div id="loader" class="loader">🔍 Searching internal policy database...</div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask a question about company policies..." onkeypress="if(event.key==='Enter') askHR()">
+            <button class="send-btn" onclick="askHR()">Send Query</button>
+        </div>
+    </div>
+
+    <script>
+        async function askHR() {
+            const input = document.getElementById('user-input');
+            const window = document.getElementById('chat-window');
+            const loader = document.getElementById('loader');
+            if (!input.value.trim()) return;
+
+            const query = input.value;
+            window.innerHTML += `<div class="msg user">${query}</div>`;
+            input.value = '';
+            window.scrollTop = window.scrollHeight;
+
+            loader.style.display = "block";
+
+            try {
+                const res = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                const data = await res.json();
+                loader.style.display = "none";
+                
+                // FIXED LINE: Use marked.parse() to turn stars into real bold text
+                const formattedAnswer = marked.parse(data.answer);
+                window.innerHTML += `<div class="msg ai">${formattedAnswer}</div>`;
+                
+            } catch (e) {
+                loader.style.display = "none";
+                window.innerHTML += `<div class="msg ai" style="color:red">System Error: Could not connect to server.</div>`;
+            }
+            window.scrollTop = window.scrollHeight;
+        }
+
+        function clearChat() {
+            document.getElementById('chat-window').innerHTML = `<div class="msg ai">Conversation cleared. How can I help?</div>`;
+        }
+    </script>
+</body>
+</html>
