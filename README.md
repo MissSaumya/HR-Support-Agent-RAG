@@ -1,6 +1,6 @@
 # HR Support Agent (RAG)
 
-![HR Agent Screenshot](Screenshot 2025-12-23 161911.png)
+![HR Agent Screenshot](demo.png)
 
 An end-to-end AI application that uses **Retrieval-Augmented Generation (RAG)** to answer company policy questions.
 
@@ -22,3 +22,4 @@ An end-to-end AI application that uses **Retrieval-Augmented Generation (RAG)** 
 2. Clone this repo.
 3. Run `pip install -r requirements.txt`.
 4. Run `python app.py`.
+
